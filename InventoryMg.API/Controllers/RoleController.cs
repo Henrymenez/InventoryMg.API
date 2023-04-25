@@ -24,6 +24,7 @@ namespace InventoryMg.API.Controllers
         [SwaggerOperation(Summary = "Get all available roles on the application", Description = "Requires admin authorization")]
         [SwaggerResponse(StatusCodes.Status200OK, "Return the all the available roles")]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal server error")]
+        [SwaggerResponse(StatusCodes.Status401Unauthorized, "Unauthorized")]
         [SwaggerResponse(StatusCodes.Status404NotFound,"Not Found")]
         public async Task<IActionResult> GetRoles()
         {
@@ -36,6 +37,7 @@ namespace InventoryMg.API.Controllers
         [SwaggerResponse(StatusCodes.Status201Created, "Return the just created role name")]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal server error")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Not Found")]
+        [SwaggerResponse(StatusCodes.Status401Unauthorized, "Unauthorized")]
         public async Task<IActionResult> CreateRole(string name)
         {
             RoleResult obj = await _roleService.CreateRole(name);
@@ -54,6 +56,7 @@ namespace InventoryMg.API.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "Return a list of users")]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal server error")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Not Found")]
+        [SwaggerResponse(StatusCodes.Status401Unauthorized, "Unauthorized")]
         public async Task<IActionResult> GetAllUsers()
         {
             var result = await _roleService.GetAllUser();
@@ -65,6 +68,7 @@ namespace InventoryMg.API.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "Return a success message")]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal server error")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Not Found")]
+        [SwaggerResponse(StatusCodes.Status401Unauthorized, "Unauthorized")]
         public async Task<IActionResult> AddUserToRole(string email, string roleName)
         {
             var result = await _roleService.AddUserToRole(email, roleName);
@@ -81,6 +85,7 @@ namespace InventoryMg.API.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "Return a list of role id belonging to a user")]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal server error")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Not Found")]
+        [SwaggerResponse(StatusCodes.Status401Unauthorized, "Unauthorized")]
         public async Task<IActionResult> GetUserRoles(string email)
         {
             var result = await _roleService.GetUserRoles(email);
@@ -96,6 +101,7 @@ namespace InventoryMg.API.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "Return a success message")]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal server error")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Not Found")]
+        [SwaggerResponse(StatusCodes.Status401Unauthorized, "Unauthorized")]
         public async Task<IActionResult> RemoveUserFromRole(string email, string roleName)
         {
             var result = await _roleService.RemoveUserFromRole(email, roleName);

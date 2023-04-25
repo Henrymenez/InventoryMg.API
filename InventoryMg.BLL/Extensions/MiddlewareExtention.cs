@@ -25,6 +25,7 @@ namespace InventoryMg.BLL.Extensions
            services.AddTransient<ISalesServices, SalesServices>();
             services.AddTransient<IRoleService, RoleService>();
             services.AddTransient<IPaymentService,PaymentService>();
+            services.AddTransient<IUserService, UserService>();
            
         }
     }
