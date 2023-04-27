@@ -13,4 +13,4 @@
 
 ### When App starts a change the connection string in the appsettings.json File. Run the migration then start the app.
 
-### The migration will seed the db with some demo data which you can be able to use to test
+### The migration will seed the db with one admiin user demo data which you can be able to use to perform admin functions
