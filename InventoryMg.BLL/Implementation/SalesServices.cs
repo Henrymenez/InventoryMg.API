@@ -19,11 +19,11 @@ namespace InventoryMg.BLL.Implementation
         private readonly UserManager<UserProfile> _userManager;
         private readonly IMapper _mapper;
         private readonly IRepository<Product> _productRepo;
-        private readonly HttpContextAccessor _httpContextAccessor;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
 
         public SalesServices(IUnitOfWork unitOfWork, UserManager<UserProfile> userManager,
-            IMapper mapper, HttpContextAccessor httpContextAccessor)
+            IMapper mapper, IHttpContextAccessor httpContextAccessor)
         {
             _unitOfWork = unitOfWork;
             _saleRepo = unitOfWork.GetRepository<Sale>();
@@ -34,6 +34,7 @@ namespace InventoryMg.BLL.Implementation
         }
         public async Task<SalesResponseDto> AddSale(SalesRequestDto model)
         {
+
             var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
                 throw new NotFoundException("User not logged in");
@@ -117,14 +118,14 @@ namespace InventoryMg.BLL.Implementation
             return _mapper.Map<SalesResponseDto>(sale);
         }
 
-        public IEnumerable<SalesResponseDto> GetUserSales()
+        public async  Task<IEnumerable<SalesResponseDto>> GetUserSales()
         {
             var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
                 throw new NotFoundException("User not logged in");
-            // = await  _saleRepo.GetByAsync(s => s.UserId == UserId);
-            var sales = _saleRepo.GetQueryable(p => p.UserId.ToString() == userId).OrderBy(i => i.Id);
-            if (sales == null)
+            var sales = await  _saleRepo.GetByAsync(s => s.UserId.ToString() == userId);
+           // var sales = _saleRepo.GetQueryable(p => p.UserId.ToString() == userId).OrderBy(i => i.Id);
+            if (sales.OrderBy(i => i.Id) == null)
                 throw new NotFoundException("User id was incorrect");
             return _mapper.Map<IEnumerable<SalesResponseDto>>(sales);
         }

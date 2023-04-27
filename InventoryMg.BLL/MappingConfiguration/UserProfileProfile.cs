@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using InventoryMg.BLL.DTOs.Request;
+using InventoryMg.BLL.DTOs.Response;
 using InventoryMg.DAL.Entities;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,8 @@ namespace InventoryMg.BLL.MappingConfiguration
             CreateMap<UserRegistration, UserProfile>()
                 .ForMember(dest => dest.FullName,
                 opts => opts.MapFrom(src => src.FirstName + " " + src.LastName));
+            CreateMap<UpdateUser, UserProfile>();
+            CreateMap<UserProfile, UserProfileResponse>();
         
         }
     }
