@@ -118,14 +118,14 @@ namespace InventoryMg.BLL.Implementation
             return _mapper.Map<SalesResponseDto>(sale);
         }
 
-        public IEnumerable<SalesResponseDto> GetUserSales()
+        public async  Task<IEnumerable<SalesResponseDto>> GetUserSales()
         {
             var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
                 throw new NotFoundException("User not logged in");
-            // = await  _saleRepo.GetByAsync(s => s.UserId == UserId);
-            var sales = _saleRepo.GetQueryable(p => p.UserId.ToString() == userId).OrderBy(i => i.Id);
-            if (sales == null)
+            var sales = await  _saleRepo.GetByAsync(s => s.UserId.ToString() == userId);
+           // var sales = _saleRepo.GetQueryable(p => p.UserId.ToString() == userId).OrderBy(i => i.Id);
+            if (sales.OrderBy(i => i.Id) == null)
                 throw new NotFoundException("User id was incorrect");
             return _mapper.Map<IEnumerable<SalesResponseDto>>(sales);
         }

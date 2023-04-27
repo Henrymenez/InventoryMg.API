@@ -1,6 +1,7 @@
 ﻿using InventoryMg.BLL.DTOs.Request;
 using InventoryMg.BLL.DTOs.Response;
 using InventoryMg.BLL.Interfaces;
+using InventoryMg.DAL.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,15 +31,16 @@ namespace InventoryMg.API.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest();
             }
             var response = await _salesServices.AddSale(model);
             if (response != null)
             {
+              
                 return StatusCode(201, response);
             }
 
-            return BadRequest("something went wrong");
+            return NotFound(new { Message = "Unable to add product"});
         }
 
         [HttpGet("get-all-user-sales")]
@@ -47,10 +49,13 @@ namespace InventoryMg.API.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "Return the newly crated Sale")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "No sale Avalible")]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal server error")]
-        public IActionResult GetUserSales()
+        public async Task<IActionResult> GetUserSales()
         {
 
-            var sales = _salesServices.GetUserSales();
+            var sales = await _salesServices.GetUserSales();
+            if (sales == null)
+                return NotFound();
+
             return Ok(sales);
         }
 
@@ -64,7 +69,7 @@ namespace InventoryMg.API.Controllers
             var result = await _salesServices.DeleteSale(new Guid(saleId));
             if (result)
             {
-                return Ok("Sale deleted");
+                return NoContent();
             }
             return BadRequest(new { message = "Unable to delete", status = result });
         }
@@ -78,12 +83,13 @@ namespace InventoryMg.API.Controllers
         {
 
             Guid saleId = new Guid(id);
+         
             SalesResponseDto response = await _salesServices.GetSaleById(saleId);
             if (response != null)
             {
                 return Ok(response);
             }
-            return BadRequest(response);
+            return NotFound();
         }
 
         [HttpPut("edit-sale-by-id")]
@@ -95,12 +101,12 @@ namespace InventoryMg.API.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest();
             }
 
             SalesResponseDto edited = await _salesServices.EditSale(model);
             if (edited == null)
-                return BadRequest(edited);
+                return BadRequest();
 
             return Ok(edited);
         }
