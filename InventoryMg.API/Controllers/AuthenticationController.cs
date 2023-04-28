@@ -37,7 +37,7 @@ namespace InventoryMg.API.Controllers
                     return Ok(response);
                 }
 
-                return BadRequest(response);
+                return BadRequest();
             }
 
             return BadRequest(new AuthResult()

@@ -29,6 +29,9 @@ namespace InventoryMg.API.Controllers
         public async Task<IActionResult> GetRoles()
         {
             var roles = await _roleService.GetAllRoles();
+            if (roles == null)
+                return NotFound();
+
             return Ok(roles);
         }
 
