@@ -24,6 +24,7 @@ namespace InventoryMg.API.Controllers
         [HttpGet("get-all-user-product")]
         [SwaggerOperation(Summary = "Get all product list")]
         [SwaggerResponse(StatusCodes.Status200OK, "Return all products")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Not Found")]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal server error")]
         public async Task<IActionResult> GetProducts()
         {
@@ -32,7 +33,7 @@ namespace InventoryMg.API.Controllers
             {
                 return Ok(products);
             }
-            return BadRequest();
+            return NotFound();
         }
 
         [HttpPost("add-product")]
@@ -42,6 +43,10 @@ namespace InventoryMg.API.Controllers
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal server error")]
         public async Task<IActionResult> Addproduct([FromBody] ProductViewRequest product)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
             ProductResult result = await _productService.AddProductAsync(product);
             if (result.Result == false)
             {
@@ -66,7 +71,7 @@ namespace InventoryMg.API.Controllers
             {
                 return Ok(response);
             }
-            return BadRequest(response);
+            return NotFound();
         }
 
         [HttpPut("update-product-by-id")]
@@ -78,11 +83,12 @@ namespace InventoryMg.API.Controllers
         public async Task<IActionResult> UpdateProduct([FromBody] ProductView product)
         {
             ProductResult result = await _productService.EditProductAsync(product);
-            if (result.Result == false)
+            if (result.Result)
             {
-                return BadRequest(result);
+                return Ok(result);
             }
-            return Ok(result);
+            return BadRequest(result);
+           
         }
 
         [HttpDelete("delete-product-by-id")]

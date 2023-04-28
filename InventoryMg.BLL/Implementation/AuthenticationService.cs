@@ -26,12 +26,13 @@ namespace InventoryMg.BLL.Implementation
         private readonly ApplicationDbContext _dbContext;
         private readonly TokenValidationParameters _tokenValidationParameters;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILoggerManager _logger;
 
         public AuthenticationService(UserManager<UserProfile> userManager,
             IConfiguration configuration, RoleManager<AppRole> roleManager,
             IMapper mapper, ApplicationDbContext dbContext,
             TokenValidationParameters tokenValidationParameters,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor, ILoggerManager logger)
         {
             _userManager = userManager;
             //   _jwtConfig = jwtConfig;
@@ -41,6 +42,7 @@ namespace InventoryMg.BLL.Implementation
             _dbContext = dbContext;
             _tokenValidationParameters = tokenValidationParameters;
             _httpContextAccessor = httpContextAccessor;
+            _logger = logger;
         }
 
         public async Task<AuthResult> CreateUser(UserRegistration request)
@@ -48,13 +50,18 @@ namespace InventoryMg.BLL.Implementation
 
             var existingUser = await _userManager.FindByEmailAsync(request.Email);
             if (existingUser != null)
+            {
+                _logger.LogError($"User already exists with Email {request.Email}");
                 throw new Exceptions.NotImplementedException($"User already exists with Email {request.Email}");
+            }
+                
             UserProfile user = _mapper.Map<UserProfile>(request);
 
             IdentityResult result = await _userManager.CreateAsync(user, request.Password);
 
             if (!result.Succeeded)
             {
+                _logger.LogError($"Failed to create user: {(result.Errors.FirstOrDefault())?.Description}");
                 throw new InvalidOperationException($"Failed to create user: {(result.Errors.FirstOrDefault())?.Description}");
             };
             //generate token
@@ -64,7 +71,7 @@ namespace InventoryMg.BLL.Implementation
             await _userManager.AddToRoleAsync(user, "Customer");
 
             var token = await GenerateJwtToken(user);
-
+            _logger.LogInfo($"{user.FullName} justed Registered in. Time: {DateTime.Now}");
             return token;
         }
         public async Task<AuthenticationResponse> UserLogin(LoginRequest request)
