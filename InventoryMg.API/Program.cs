@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Text;
+using NLog;
 
 namespace InventoryMg.API
 {
@@ -20,6 +21,7 @@ namespace InventoryMg.API
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+            LogManager.LoadConfiguration(string.Concat(Directory.GetCurrentDirectory(), "/nlog.config"));
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -55,6 +57,7 @@ namespace InventoryMg.API
             },
     });
             });
+            /*builder.Services.ConfigureLoggerService();*/
 
            builder.Services.Configure<FormOptions>(options =>
             {
@@ -136,6 +139,7 @@ namespace InventoryMg.API
 
             app.MapControllers();
             app.AddGlobalErrorHandler();
+            app.UseCors("CorsPolicy");
 
 
             await SeedData.EnsurePopulatedAsync(app);

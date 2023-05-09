@@ -15,7 +15,7 @@ namespace InventoryMg.BLL.Interfaces
        Task<ProductResult> AddProductAsync(ProductViewRequest product);
         Task<ProductView> GetProductById(Guid prodId);
 
-         Task<ProductResult> EditProductAsync(ProductView product);
+         Task<ProductResult> EditProductAsync(string prodId, UpdateProduct productView);
 
         Task<ProductResult> DeleteProductAsync(Guid prodId);
         
