@@ -50,8 +50,9 @@ namespace InventoryMg.BLL.Implementation
                 throw new BadRequestException("Product quantity is less than sale quantity");
 
             var newQuntity = existingProduct.Quantity - model.Quantity;
+            
             var newSale = _mapper.Map<Sale>(model);
-
+            
             Sale addedSale = await _saleRepo.AddAsync(newSale);
             if (addedSale == null)
                 throw new NotImplementedException("Sale was unable to be added");

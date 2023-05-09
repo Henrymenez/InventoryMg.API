@@ -40,17 +40,16 @@ namespace InventoryMg.BLL.Implementation
 
             if (userExist == null)
                 throw new KeyNotFoundException($"User Id: {userId} does not exist");
-     
-            UserProfile user = new UserProfile
-                {
-        
-                FullName = updateUser.FullName,
-                Phone = updateUser.Phone,
-                Password = "Pass12345@",
-                UserName = updateUser.UserName
+
+
+
+            userExist.FullName = updateUser.FullName;
+            userExist.Phone = updateUser.Phone;
+            userExist.Password = "Pass12345@";
+            userExist.UserName = updateUser.UserName;
                 
-                };
-            var result = await _userManager.UpdateAsync(user);
+               
+            var result = await _userManager.UpdateAsync(userExist);
          
             if (result.Succeeded)
             {

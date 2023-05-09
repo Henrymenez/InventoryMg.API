@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using KeyNotFoundException = InventoryMg.BLL.Exceptions.KeyNotFoundException;
 using NotImplementedException = InventoryMg.BLL.Exceptions.NotImplementedException;
+using UnauthorizedAccessException = InventoryMg.BLL.Exceptions.UnauthorizedAccessException;
 
 namespace InventoryMg.BLL.Implementation
 {
@@ -21,7 +22,7 @@ namespace InventoryMg.BLL.Implementation
         private readonly IMapper _mapper;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ProductService(IUnitOfWork unitOfWork, UserManager<UserProfile> userManager, 
+        public ProductService(IUnitOfWork unitOfWork, UserManager<UserProfile> userManager,
             IMapper mapper, IHttpContextAccessor httpContextAccessor)
         {
             _unitOfWork = unitOfWork;
@@ -35,6 +36,7 @@ namespace InventoryMg.BLL.Implementation
         {
             var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userExist = await _userManager.FindByIdAsync(userId);
+            product.userId = userId;
 
             if (userExist == null)
                 throw new KeyNotFoundException($"User Id: {userId} does not match with the product");
@@ -43,6 +45,7 @@ namespace InventoryMg.BLL.Implementation
 
             if (createdProduct != null)
             {
+
                 var toReturn = _mapper.Map<ProductView>(createdProduct);
                 return (new ProductResult()
                 {
@@ -69,6 +72,8 @@ namespace InventoryMg.BLL.Implementation
             Product productToDelete = await _productRepo.GetSingleByAsync(p => p.Id == prodId);
             if (productToDelete == null)
                 throw new NotFoundException($"Invalid product id: {prodId}");
+            if (productToDelete.UserId.ToString() != userId)
+                throw new UnauthorizedAccessException("You are not authorized to delete this product");
             await _productRepo.DeleteAsync(productToDelete);
             return (new ProductResult()
             {
@@ -82,7 +87,7 @@ namespace InventoryMg.BLL.Implementation
 
         }
 
-        public async Task<ProductResult> EditProductAsync(ProductView product)
+        public async Task<ProductResult> EditProductAsync(string prodId, UpdateProduct product)
         {
             var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
@@ -91,38 +96,71 @@ namespace InventoryMg.BLL.Implementation
             UserProfile user = await _userManager.FindByIdAsync(userId);
             if (user == null)
                 throw new NotFoundException($"User with id: {userId} not found");
+            var file = product.File;
 
-            Product userProduct = await _productRepo.GetSingleByAsync(p => p.Id == product.Id);
-
-            if (userProduct != null)
+            if (file == null || file.Length == 0)
             {
-
-                userProduct.Name = product.Name;
-                userProduct.Description = product.Description;
-                userProduct.Price = product.Price;
-                userProduct.Quantity = product.Quantity;
-                userProduct.BrandName = product.BrandName;
-                userProduct.Category = product.Category;
-                Product updatedProduct = await _productRepo.UpdateAsync(userProduct);
-                if (updatedProduct != null)
+                throw new NotImplementedException("No file uploaded.");
+            }
+            string path = "";
+            if (file.Length > 0)
+            {
+                path = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "UploadedFiles"));
+                if (!Directory.Exists(path))
                 {
-                    return new ProductResult()
-                    {
-                        Products = new List<ProductView>
-                        {
-                            product
-                        },
-                        Result = true,
-                        Message = new List<string>()
-                        {
-                            "Here are your Products"
-                        }
+                    Directory.CreateDirectory(path);
+                }
+                using (var fileStream = new FileStream(Path.Combine(path, file.FileName), FileMode.Create))
+                {
+                    await file.CopyToAsync(fileStream);
+                }
 
-                    };
+                Product userProduct = await _productRepo.GetSingleByAsync(p => p.Id.ToString() == prodId);
+
+                if (userProduct != null)
+                {
+
+                    userProduct.Name = product.Name;
+                    userProduct.Description = product.Description;
+                    userProduct.Price = product.Price;
+                    userProduct.Quantity = product.Quantity;
+                    userProduct.BrandName = product.BrandName;
+                    userProduct.Category = product.Category;
+                    userProduct.ProductImagePath = path + $"/{file.FileName}";
+                    Product updatedProduct = await _productRepo.UpdateAsync(userProduct);
+                    if (updatedProduct != null)
+                    {
+                        return new ProductResult()
+                        {
+                            Products = new List<ProductView>
+                                     {
+                                         new ProductView()
+                                         {
+                                             Id = updatedProduct.Id,
+                                             Name = updatedProduct.Name,
+                                             Description = updatedProduct.Description,
+                                             Price = updatedProduct.Price,
+                                             Quantity = updatedProduct.Quantity,
+                                             Category = updatedProduct.Category,
+                                             BrandName =  updatedProduct.BrandName,
+                                             ProductImagePath = updatedProduct.ProductImagePath
+                                         }
+                                     },
+                            Result = true,
+                            Message = new List<string>()
+                                     {
+                                         "Here are your Products"
+                                     }
+
+                        };
+                    }
                 }
                 throw new NotImplementedException("Unbale to update product");
             }
-            throw new NotFoundException($"Product with id: {product.Id} not found");
+            throw new NotFoundException($"Product with id: {prodId} not found");
+
+
+
         }
 
         public async Task<IEnumerable<ProductView>> GetAllUserProducts()
@@ -158,9 +196,10 @@ namespace InventoryMg.BLL.Implementation
 
             var product = await _productRepo.GetSingleByAsync(p => p.Id.ToString() == prodId);
             if (product == null)
-                throw new NotFoundException("Product with id {prodId} not found");
+                throw new NotFoundException($"Product with id: {prodId} not found");
 
-           
+            if (product.UserId.ToString() != userId)
+                throw new UnauthorizedAccessException("You are not authorized to perform this action");
             if (file == null || file.Length == 0)
             {
                 throw new NotImplementedException("No file uploaded.");
@@ -184,7 +223,7 @@ namespace InventoryMg.BLL.Implementation
                 {
                     throw new NotImplementedException("Unable to upload image");
                 }
-                return $"File '{file.FileName}' was uploaded. Path: '{path}'";
+                return $"File '{file.FileName}' was uploaded. Path: '{product.ProductImagePath}'";
             }
 
             throw new NotImplementedException("Invalid file size");

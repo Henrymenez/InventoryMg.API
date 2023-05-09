@@ -24,6 +24,7 @@ namespace InventoryMg.API.Controllers
         [HttpGet("get-all-user-product")]
         [SwaggerOperation(Summary = "Get all product list")]
         [SwaggerResponse(StatusCodes.Status200OK, "Return all products")]
+        [SwaggerResponse(StatusCodes.Status401Unauthorized, "Unauthorized")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Not Found")]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal server error")]
         public async Task<IActionResult> GetProducts()
@@ -74,15 +75,15 @@ namespace InventoryMg.API.Controllers
             return NotFound();
         }
 
-        [HttpPut("update-product-by-id")]
+        [HttpPatch("update-product-by-id")]
         [Authorize(Roles = "Customer")]
         [SwaggerOperation(Summary = "Update product by id", Description = "Requires cusomer authorization")]
         [SwaggerResponse(StatusCodes.Status200OK, "Return the product")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Product not found")]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal server error")]
-        public async Task<IActionResult> UpdateProduct([FromBody] ProductView product)
+        public async Task<IActionResult> UpdateProduct(string prodId, [FromForm] UpdateProduct productView)
         {
-            ProductResult result = await _productService.EditProductAsync(product);
+            ProductResult result = await _productService.EditProductAsync(prodId,productView);
             if (result.Result)
             {
                 return Ok(result);
