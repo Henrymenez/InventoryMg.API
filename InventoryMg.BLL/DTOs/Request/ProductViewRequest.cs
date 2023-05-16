@@ -1,4 +1,5 @@
 ﻿using InventoryMg.DAL.Enums;
+using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
 namespace InventoryMg.BLL.DTOs.Request
@@ -17,8 +18,7 @@ namespace InventoryMg.BLL.DTOs.Request
         public decimal Price { get; set; }
         [Required, StringLength(50, ErrorMessage = "Product brandname should be between 5 to 50 characters", MinimumLength = 2)]
         public string BrandName { get; set; }
-
         public string? userId { get; set; }
-       
+        public IFormFile? File { get; set; }
     }
 }

@@ -10,7 +10,7 @@ namespace InventoryMg.DAL.Entities
         public long Quantity { get; set; }
         public decimal Price { get; set; }
 
-        [ForeignKey("UserProfile")]
+        [ForeignKey(nameof(UserProfile))]
         public Guid UserId { get; set; }
         public UserProfile User { get; set; }
 
