@@ -42,7 +42,7 @@ namespace InventoryMg.API.Controllers
         [SwaggerOperation(Summary = "Create a new product", Description = "Requires cusomer authorization")]
         [SwaggerResponse(StatusCodes.Status201Created, "Return the newly crated product")]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal server error")]
-        public async Task<IActionResult> Addproduct([FromBody] ProductViewRequest product)
+        public async Task<IActionResult> Addproduct([FromForm] ProductViewRequest product)
         {
             if (!ModelState.IsValid)
             {

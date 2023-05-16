@@ -17,5 +17,7 @@ namespace InventoryMg.BLL.DTOs.Request
         public decimal Price { get; set; }
         [Required(ErrorMessage = "Product is required")]
         public string ProductId { get; set; }
+
+        public string? userId { get; set; }
     }
 }

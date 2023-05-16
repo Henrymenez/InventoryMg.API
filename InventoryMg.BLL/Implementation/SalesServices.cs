@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using NotImplementedException = InventoryMg.BLL.Exceptions.NotImplementedException;
+using UnauthorizedAccessException = InventoryMg.BLL.Exceptions.UnauthorizedAccessException;
 
 namespace InventoryMg.BLL.Implementation
 {
@@ -47,9 +48,12 @@ namespace InventoryMg.BLL.Implementation
             if (existingProduct == null)
                 throw new NotFoundException($"Product with id: {model.ProductId} not found");
             if (!(existingProduct.Quantity > model.Quantity))
-                throw new BadRequestException("Product quantity is less than sale quantity");
+                throw new BadRequestException("Insuccifient amount of product quantity");
+            if (existingProduct.UserId.ToString() != userId)
+                throw new UnauthorizedAccessException("You do not have access to this product");
 
             var newQuntity = existingProduct.Quantity - model.Quantity;
+            model.userId = userId;
             
             var newSale = _mapper.Map<Sale>(model);
             
